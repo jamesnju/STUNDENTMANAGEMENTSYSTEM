@@ -1,26 +1,91 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+    /* LIGHT THEME */
+    --text-50: #0b0d0e;  --text-100: #161a1d; --text-200: #2c343a;
+    --text-300: #434e56; --text-400: #596973; --text-500: #6f8390;
+    --text-600: #8c9ca6; --text-700: #a9b4bc; --text-800: #c5cdd3;
+    --text-900: #e2e6e9; --text-950: #f1f3f4;
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    --background-50: #0a0d10;  --background-100: #131b20; --background-200: #27353f;
+    --background-300: #3a505f; --background-400: #4e6b7e; --background-500: #61869e;
+    --background-600: #819eb1; --background-700: #a0b6c5; --background-800: #c0ced8;
+    --background-900: #dfe7ec; --background-950: #eff3f5;
+
+    --primary-50: #080d11;  --primary-100: #111922; --primary-200: #213345;
+    --primary-300: #324c67; --primary-400: #42668a; --primary-500: #537fac;
+    --primary-600: #7599bd; --primary-700: #98b2cd; --primary-800: #baccde;
+    --primary-900: #dde6ee; --primary-950: #eef2f7;
+
+    --secondary-50: #070d13;  --secondary-100: #0e1a25; --secondary-200: #1c344a;
+    --secondary-300: #294e70; --secondary-400: #376895; --secondary-500: #4581ba;
+    --secondary-600: #6a9bc8; --secondary-700: #8fb4d6; --secondary-800: #b5cde3;
+    --secondary-900: #dae6f1; --secondary-950: #ecf2f8;
+
+    --accent-50: #050d14;  --accent-100: #0b1a28; --accent-200: #153451;
+    --accent-300: #204e79; --accent-400: #2b68a1; --accent-500: #3682c9;
+    --accent-600: #5e9bd4; --accent-700: #86b4df; --accent-800: #aecdea;
+    --accent-900: #d7e6f4; --accent-950: #ebf2fa;
+
+    /* Semantic defaults - FIXED FOR LIGHT MODE */
+    --bg-base: var(--background-950);        /* Near white background */
+    --bg-surface: #ffffff;                   /* Pure white cards */
+    --bg-muted: var(--background-900);       /* Light gray for hover states */
+    
+    --fg-base: var(--text-50);               /* Near black for primary text (Fix) */
+    --fg-muted: var(--text-400);             /* Dark gray for secondary text (Fix) */
+    
+    --border-color: var(--background-800);   /* Light gray borders */
+    
+    --brand: var(--primary-500);             /* Primary brand blue */
+    --brand-hover: var(--primary-400);       /* Darker blue on hover */
+    --ring: var(--accent-500);               /* Focus rings */
+  }
+
+  .dark {
+    --text-50: #f1f3f4;  --text-100: #e2e6e9; --text-200: #c6cdd2;
+    --text-300: #a9b4bc; --text-400: #8d9ba5; --text-500: #70838f;
+    --text-600: #5a6872; --text-700: #434e56; --text-800: #2d3439;
+    --text-900: #161a1d; --text-950: #0b0d0e;
+
+    --background-50: #eff3f5;  --background-100: #dfe7ec; --background-200: #c0ced8;
+    --background-300: #a0b6c5; --background-400: #819eb1; --background-500: #61869e;
+    --background-600: #4e6b7e; --background-700: #3a505f; --background-800: #27353f;
+    --background-900: #131b20; --background-950: #0a0d10;
+
+    --primary-50: #eef2f7;  --primary-100: #dde6ee; --primary-200: #baccde;
+    --primary-300: #98b2cd; --primary-400: #7599bd; --primary-500: #537fac;
+    --primary-600: #42668a; --primary-700: #324c67; --primary-800: #213345;
+    --primary-900: #111922; --primary-950: #080d11;
+
+    --secondary-50: #edf2f8;  --secondary-100: #dae6f1; --secondary-200: #b5cce3;
+    --secondary-300: #90b2d5; --secondary-400: #6b99c7; --secondary-500: #467fb9;
+    --secondary-600: #386694; --secondary-700: #2a4c6f; --secondary-800: #1c334a;
+    --secondary-900: #0e1925; --secondary-950: #070d12;
+
+    --accent-50: #ebf2fa;  --accent-100: #d7e6f4; --accent-200: #aecdea;
+    --accent-300: #86b4df; --accent-400: #5e9bd4; --accent-500: #3682c9;
+    --accent-600: #2b68a1; --accent-700: #204e79; --accent-800: #153451;
+    --accent-900: #0b1a28; --accent-950: #050d14;
+
+    /* DARK THEME SEMANTICS (Kept as-is, they were correct) */
+    --bg-base: var(--background-950);        /* Near black background */
+    --bg-surface: var(--background-900);     /* Dark gray cards */
+    --bg-muted: var(--background-800);       /* Lighter dark for hover states */
+    
+    --fg-base: var(--text-50);               /* Near white text */
+    --fg-muted: var(--text-400);             /* Light gray text */
+    
+    --border-color: var(--background-700);
+    --brand: var(--primary-500);
+    --brand-hover: var(--primary-400);
+    --ring: var(--accent-500);
+  }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--fg-base);
+    font-family: system-ui, -apple-system, sans-serif;
+  }
 }
