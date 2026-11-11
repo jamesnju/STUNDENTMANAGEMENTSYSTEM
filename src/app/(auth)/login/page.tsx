@@ -1,24 +1,35 @@
+
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { signIn, getSession } from "next-auth/react"; // Added getSession
-import { useRouter, useSearchParams } from "next/navigation";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, GraduationCap, AlertCircle, Eye, EyeOff } from "lucide-react";
-import { ROLE_HOME } from "@/lib/constants"; // Import the map
+
+import {
+  Loader2,
+  GraduationCap,
+  AlertCircle,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+
+import { ROLE_HOME } from "@/lib/constants";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  
+
+  // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Handle login submission
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     setError(null);
     setSubmitting(true);
 
@@ -33,40 +44,50 @@ export default function LoginPage() {
         setError("Unexpected error. Please try again.");
         return;
       }
+
       if (result.error) {
         setError("Invalid email or password.");
         return;
       }
-      
+
       if (result.ok) {
-        // Fetch the session immediately to get the role
+        // Fetch the session immediately to get the user role
         const session = await getSession();
-        
+
         if (session?.user?.role) {
-          // Redirect based on role
+          // Redirect based on the user's role
           const destination = ROLE_HOME[session.user.role];
+
+          if (!destination) {
+            setError("No dashboard is configured for your role.");
+            return;
+          }
+
           router.push(destination);
-          router.refresh(); // Force Next.js to re-render server components with new auth state
+
+          // Refresh server components with the new authentication state
+          router.refresh();
         } else {
           setError("Failed to load user role. Please contact admin.");
         }
       }
     } catch (err) {
-      console.error(err);
+      console.error("Login error:", err);
       setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
   }
 
-
-
   return (
     <div className="flex min-h-screen bg-[var(--bg-base)] text-[var(--fg-base)]">
+
       {/* Left — brand panel (hidden on mobile) */}
       <aside className="relative hidden w-1/2 overflow-hidden bg-[var(--primary-900)] lg:block">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,var(--primary-800),transparent_60%),radial-gradient(circle_at_70%_80%,var(--accent-800),transparent_60%)] opacity-90" />
+
         <div className="relative flex h-full flex-col justify-between p-10 text-white">
+
           <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-white/15">
               <GraduationCap className="h-5 w-5" />
@@ -78,19 +99,24 @@ export default function LoginPage() {
             <h2 className="text-3xl font-bold leading-tight">
               Welcome back to your school platform.
             </h2>
+
             <p className="mt-4 text-sm text-white/80">
-              Sign in to access your dashboard. Admins manage users and settings, teachers see
-              their classes, students and parents track progress — each in their own view.
+              Sign in to access your dashboard. Admins manage users and settings,
+              teachers see their classes, students and parents track progress —
+              each in their own view.
             </p>
+
             <ul className="mt-8 space-y-3 text-sm text-white/90">
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-white/70" />
                 Role-based dashboards
               </li>
+
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-white/70" />
                 Department-scoped access
               </li>
+
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-white/70" />
                 Archived records, always preserved
@@ -99,14 +125,16 @@ export default function LoginPage() {
           </div>
 
           <p className="text-xs text-white/60">
-            © {new Date().getFullYear()} School MS. All rights reserved.
+            © 2026 School MS. All rights reserved.
           </p>
+
         </div>
       </aside>
 
-      {/* Right — form */}
+      {/* Right — login form */}
       <main className="flex w-full items-center justify-center px-4 py-10 lg:w-1/2">
         <div className="w-full max-w-md">
+
           {/* Mobile brand */}
           <Link
             href="/"
@@ -118,12 +146,20 @@ export default function LoginPage() {
             School MS
           </Link>
 
-          <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Sign in
+          </h1>
+
           <p className="mt-1.5 text-sm text-[var(--fg-muted)]">
             Enter your credentials to access your dashboard.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
+          <form
+            onSubmit={handleSubmit}
+            className="mt-8 space-y-5"
+            noValidate
+          >
+
             {/* Error banner */}
             {error && (
               <div
@@ -143,6 +179,7 @@ export default function LoginPage() {
               >
                 Email
               </label>
+
               <input
                 id="email"
                 type="email"
@@ -164,6 +201,7 @@ export default function LoginPage() {
               >
                 Password
               </label>
+
               <div className="relative">
                 <input
                   id="password"
@@ -176,6 +214,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-3 py-2.5 pr-10 text-sm text-[var(--fg-base)] placeholder:text-[var(--fg-muted)]/70 focus:border-[var(--brand)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-60"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
@@ -207,17 +246,21 @@ export default function LoginPage() {
                 "Sign in"
               )}
             </button>
+
           </form>
 
+          {/* Forgot password */}
           <p className="mt-6 text-xs text-[var(--fg-muted)]">
             Forgot your password? Contact your school administrator.
           </p>
 
+          {/* Back to home */}
           <div className="mt-8 border-t border-[var(--border-color)] pt-6 text-center text-sm text-[var(--fg-muted)]">
             <Link href="/" className="hover:text-[var(--fg-base)]">
               ← Back to home
             </Link>
           </div>
+
         </div>
       </main>
     </div>

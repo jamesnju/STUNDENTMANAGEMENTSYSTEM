@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUsers } from "@/hooks/useUsers";
-import { Table, THead, TR, TH, TD } from "@/components/ui/Table";
+import { Table, THead, TR, TH, TD, TBody } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -22,7 +22,6 @@ export default function AdminUsersPage() {
 
   const { data, isLoading, isError } = useUsers({ page, limit: 10, role, search });
 
-  // Handle search debounce
   const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
@@ -44,7 +43,7 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold">Users</h1>
+          <h1 className="text-2xl font-bold text-[var(--fg-base)]">Users</h1>
           <p className="text-sm text-[var(--fg-muted)]">Manage all staff, students, and parents.</p>
         </div>
         <Link href="/admin/users/new">
@@ -54,13 +53,16 @@ export default function AdminUsersPage() {
 
       <div className="flex flex-wrap items-center gap-4">
         <form onSubmit={handleSearch} className="flex items-center gap-2">
-          <Input 
-            placeholder="Search by email..." 
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-64"
-          />
-          <Button type="submit" variant="secondary" className="h-10 w-10 p-0"><Search className="h-4 w-4" /></Button>
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--fg-muted)]" />
+            <Input 
+              placeholder="Search by email..." 
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button type="submit" variant="secondary">Search</Button>
         </form>
         
         <div className="flex gap-2">
@@ -78,7 +80,7 @@ export default function AdminUsersPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-[var(--fg-muted)]" /></div>
+        <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-[var(--brand)]" /></div>
       ) : isError ? (
         <div className="text-red-500">Failed to load users.</div>
       ) : (
@@ -86,35 +88,48 @@ export default function AdminUsersPage() {
           <Table>
             <THead>
               <TR>
-                <TH>Email</TH>
+                <TH>Name / Email</TH>
                 <TH>Role</TH>
-                <TH>Department</TH>
+                <TH>Details</TH>
                 <TH>Status</TH>
-                <TH>Actions</TH>
+                <TH className="text-right">Actions</TH>
               </TR>
             </THead>
-            <tbody>
+            <TBody>
               {data?.data.length === 0 && (
-                <TR><td colSpan={5} className="text-center py-8 text-[var(--fg-muted)]">No users found.</td></TR>
+                <TR><TD colSpan={5} className="text-center py-8 text-[var(--fg-muted)]">No users found.</TD></TR>
               )}
-              {data?.data.map((user: any) => (
-                <TR key={user.id}>
-                  <TD className="font-medium">{user.email}</TD>
-                  <TD><Badge>{user.role}</Badge></TD>
-                  <TD className="text-[var(--fg-muted)]">
-                    {user.teacherProfile?.departmentId || user.studentProfile?.departmentId || "—"}
-                  </TD>
-                  <TD>
-                    <Badge variant={user.isActive ? "success" : "danger"}>
-                      {user.isActive ? "Active" : "Inactive"}
-                    </Badge>
-                  </TD>
-                  <TD>
-                    <Link href={`/admin/users/${user.id}`} className="text-[var(--brand)] hover:underline">Edit</Link>
-                  </TD>
-                </TR>
-              ))}
-            </tbody>
+              {data?.data.map((user: any) => {
+                // Extract the correct profile based on role
+                const profile = user.teacherProfile || user.studentProfile || user.parentProfile;
+                const fullName = profile ? `${profile.firstName} ${profile.lastName}` : null;
+
+                return (
+                  <TR key={user.id}>
+                    <TD>
+                      <p className="font-medium text-[var(--fg-base)]">{fullName || "—"}</p>
+                      <p className="text-xs text-[var(--fg-muted)]">{user.email}</p>
+                    </TD>
+                    <TD><Badge>{user.role}</Badge></TD>
+                    <TD className="text-sm text-[var(--fg-muted)]">
+                      {user.role === "TEACHER" && `Code: ${profile?.employeeCode}`}
+                      {user.role === "STUDENT" && `Adm: ${profile?.admissionNo}`}
+                      {user.role === "PARENT" && `Phone: ${profile?.phone}`}
+                    </TD>
+                    <TD>
+                      <Badge variant={user.isActive ? "success" : "danger"}>
+                        {user.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </TD>
+                    <TD className="text-right">
+                      <Link href={`/admin/users/${user.id}`} className="text-sm font-medium text-[var(--brand)] hover:underline">
+                        Manage
+                      </Link>
+                    </TD>
+                  </TR>
+                );
+              })}
+            </TBody>
           </Table>
           
           {/* Pagination */}
