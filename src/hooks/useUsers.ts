@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import toast from "react-hot-toast";
 
 export function useUsers(params: Record<string, any> = {}) {
   return useQuery({
@@ -45,7 +46,11 @@ export function useCreateUser() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["users", "parents"] });
+      toast.success("User created successfully");
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error?.message || "Failed to create user");
+    }
   });
 }
 
@@ -56,7 +61,11 @@ export function useArchiveUser(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", id] });
+      toast.success("User archived successfully");
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error?.message || "Failed to archive user");
+    }
   });
 }
 
@@ -67,7 +76,11 @@ export function useRestoreUser(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", id] });
+      toast.success("User restored successfully");
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error?.message || "Failed to restore user");
+    }
   });
 }
 

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ArrowLeft, Loader2, Search, UserPlus, X, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 export default function NewUserPage() {
   const router = useRouter();
@@ -69,9 +70,14 @@ export default function NewUserPage() {
       payload.phone = formData.phone;
     }
 
-    createUser(payload, {
-      onSuccess: () => router.push("/admin/users"),
-      onError: (err: any) => setError(err.response?.data?.error?.message || "Failed to create user."),
+     createUser(payload, {
+      onSuccess: () => {
+        toast.success("User created successfully!");
+        router.push("/admin/users");
+      },
+      onError: (err: any) => {
+        toast.error(err.response?.data?.error?.message || "Failed to create user.");
+      },
     });
   };
 
