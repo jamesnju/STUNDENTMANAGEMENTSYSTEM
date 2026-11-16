@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Loader2, Settings2, Search, Plus, Edit2, Trash2 } from "lucide-react";
 import { SettingsModal } from "@/components/admin/settings/SettingsModal";
+import { confirmToast } from "@/components/ui/ConfirmToast";
+import toast from "react-hot-toast";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -37,23 +39,40 @@ export default function AdminSettingsPage() {
     router.push(`/admin/settings?${params.toString()}`);
   }, [searchInput, searchParams, router]);
 
-  const handleSave = (payload: any) => {
-    if (editingSetting) {
-      // For updates, we only send the value fields
-      const { param, description, ...updatePayload } = payload;
-      updateSetting({ param: editingSetting.param, payload: updatePayload }, {
-        onSuccess: () => setIsModalOpen(false)
-      });
-    } else {
-      createSetting(payload, { onSuccess: () => setIsModalOpen(false) });
-    }
-  };
+ const handleSave = (payload: any) => {
+  if (editingSetting) {
+    // For updates, we only send the value fields
+    const { param, description, ...updatePayload } = payload;
+    updateSetting({ param: editingSetting.param, payload: updatePayload }, {
+      onSuccess: () => {
+        toast.success("Setting updated");
+        setIsModalOpen(false);
+      },
+      onError: (err: any) => toast.error(err.response?.data?.error?.message || "Failed to update setting")
+    });
+  } else {
+    createSetting(payload, {
+      onSuccess: () => {
+        toast.success("Setting created");
+        setIsModalOpen(false);
+      },
+      onError: (err: any) => toast.error(err.response?.data?.error?.message || "Failed to create setting")
+    });
+  }
+};
 
-  const handleDelete = (param: string) => {
-    if (confirm(`Are you sure you want to delete the setting "${param}"?`)) {
-      deleteSetting(param);
+const handleDelete = (param: string) => {
+  confirmToast(
+    "Delete setting",
+    `Are you sure you want to delete the setting "${param}"?`,
+    () => {
+      deleteSetting(param, {
+        onSuccess: () => toast.success("Setting deleted"),
+        onError: (err: any) => toast.error(err.response?.data?.error?.message || "Failed to delete setting")
+      });
     }
-  };
+  );
+};
 
   return (
     <div className="space-y-6">

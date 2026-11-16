@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import toast from "react-hot-toast";
 
 // ==========================================
 // 1. TERMS
@@ -102,29 +103,29 @@ export function useDeleteClass() {
 // ==========================================
 // 4. ENROLLMENTS
 // ==========================================
-export function useEnrollments(params: Record<string, any> = {}) {
-  return useQuery({
-    queryKey: ["academic", "enrollments", params],
-    queryFn: async () => {
-      const { data } = await api.get("/admin/academic/enrollments", { params });
-      return data;
-    },
-    placeholderData: (prev) => prev,
-  });
-}
+// export function useEnrollments(params: Record<string, any> = {}) {
+//   return useQuery({
+//     queryKey: ["academic", "enrollments", params],
+//     queryFn: async () => {
+//       const { data } = await api.get("/admin/academic/enrollments", { params });
+//       return data;
+//     },
+//     placeholderData: (prev) => prev,
+//   });
+// }
 
-export function useBulkEnroll() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (payload: any) => (await api.post("/admin/academic/enrollments/bulk", payload)).data,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["academic", "enrollments"] }),
-  });
-}
+// export function useBulkEnroll() {
+//   const qc = useQueryClient();
+//   return useMutation({
+//     mutationFn: async (payload: any) => (await api.post("/admin/academic/enrollments/bulk", payload)).data,
+//     onSuccess: () => qc.invalidateQueries({ queryKey: ["academic", "enrollments"] }),
+//   });
+// }
 
 // ==========================================
 // 5. TIMETABLE
 // ==========================================
-export function useTimetable(params: Record<string, any> = {}) {
+export function useTimetable(params: Record<string, any> = {}, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ["academic", "timetable", params],
     queryFn: async () => {
@@ -132,8 +133,19 @@ export function useTimetable(params: Record<string, any> = {}) {
       return data;
     },
     placeholderData: (prev) => prev,
+    enabled: options.enabled ?? true,
   });
 }
+// export function useTimetable(params: Record<string, any> = {}) {
+//   return useQuery({
+//     queryKey: ["academic", "timetable", params],
+//     queryFn: async () => {
+//       const { data } = await api.get("/timetable", { params });
+//       return data;
+//     },
+//     placeholderData: (prev) => prev,
+//   });
+// }
 
 export function useCreateTimetableSlot() {
   const qc = useQueryClient();
@@ -251,5 +263,65 @@ export function useDeleteClassSubject() {
   return useMutation({
     mutationFn: async (id: string) => (await api.delete(`/admin/academic/class-subjects/${id}`)).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["academic", "class-subjects"] }),
+  });
+}
+
+// ==========================================
+// 4. ENROLLMENTS
+// ==========================================
+export function useEnrollments(params: Record<string, any> = {}) {
+  return useQuery({
+    queryKey: ["academic", "enrollments", params],
+    queryFn: async () => {
+      const { data } = await api.get("/admin/academic/enrollments", { params });
+      return data;
+    },
+    placeholderData: (prev) => prev,
+  });
+}
+
+// NEW: Single Enrollment
+export function useSingleEnroll() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { classId: string; studentId: string; term: string }) => 
+      (await api.post("/admin/academic/enrollments", payload)).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["academic", "enrollments"] });
+      toast.success("Student enrolled successfully");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error?.message || "Failed to enroll student");
+    },
+  });
+}
+
+// Existing: Bulk Enrollment
+export function useBulkEnroll() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: any) => (await api.post("/admin/academic/enrollments/bulk", payload)).data,
+    onSuccess: (data: any) => {
+      qc.invalidateQueries({ queryKey: ["academic", "enrollments"] });
+      toast.success(`Enrolled ${data.created} students (${data.skipped} skipped)`);
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error?.message || "Failed to enroll students");
+    },
+  });
+}
+
+// NEW: Withdraw Student (Soft Delete)
+export function useWithdrawEnrollment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => (await api.delete(`/admin/academic/enrollments/${id}`)).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["academic", "enrollments"] });
+      toast.success("Student withdrawn from class");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error?.message || "Failed to withdraw student");
+    },
   });
 }

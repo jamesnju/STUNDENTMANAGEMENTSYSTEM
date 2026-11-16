@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Loader2, Send, XCircle, Plus, Bell } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function AdminNotificationsPage() {
   const searchParams = useSearchParams();
@@ -22,12 +23,17 @@ export default function AdminNotificationsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ title: "", body: "", audience: "STUDENTS" });
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    createNotif({ ...formData, channels: ["EMAIL", "IN_APP"] }, {
-      onSuccess: () => { setIsModalOpen(false); setFormData({ title: "", body: "", audience: "STUDENTS" }); }
-    });
-  };
+ const handleCreate = (e: React.FormEvent) => {
+  e.preventDefault();
+  createNotif({ ...formData, channels: ["EMAIL", "IN_APP"] }, {
+    onSuccess: () => {
+      toast.success("Notification created");
+      setIsModalOpen(false);
+      setFormData({ title: "", body: "", audience: "STUDENTS" });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error?.message || "Failed to create notification")
+  });
+};
 
   return (
     <div className="space-y-6">

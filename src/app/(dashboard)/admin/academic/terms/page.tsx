@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Loader2, Plus, Trash2, Calendar } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function TermsPage() {
   const { data, isLoading } = useTerms();
@@ -15,10 +16,16 @@ export default function TermsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", academicYear: "", startsAt: "", endsAt: "" });
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    createTerm({ ...form, isActive: true }, { onSuccess: () => setIsModalOpen(false) });
-  };
+const handleCreate = (e: React.FormEvent) => {
+  e.preventDefault();
+  createTerm({ ...form, isActive: true }, {
+    onSuccess: () => {
+      toast.success("Term created");
+      setIsModalOpen(false);
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error?.message || "Failed to create term")
+  });
+};
 
   return (
     <div className="space-y-6">

@@ -109,3 +109,23 @@ export function useParents() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 }
+// Append to src/hooks/useUsers.ts
+
+// NEW: Dedicated hook to fetch students for enrollment dropdowns
+export function useStudents() {
+  return useQuery({
+    queryKey: ["users", "students"], // Unique key so it doesn't conflict with /admin/users
+    queryFn: async () => {
+      const { data } = await api.get("/admin/users", { 
+        params: { role: "STUDENT", limit: 100 } 
+      });
+      
+      // Log for debugging
+      console.log("🎓 Students fetched from API:", data.data);
+      
+      // Filter out any users that don't have a student profile row
+      return (data.data as any[]).filter(u => u.studentProfile !== null);
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 mins
+  });
+}

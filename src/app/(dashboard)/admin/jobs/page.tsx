@@ -16,6 +16,7 @@ import {
   Terminal, 
   X 
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 // Map job names to readable titles and default payloads
 const JOB_META: Record<string, { title: string; description: string; defaultPayload: any }> = {
@@ -66,28 +67,28 @@ function JobsContent() {
     setJsonError(null);
   };
 
-  const handleRunJob = () => {
-    if (!selectedJob) return;
-    setJsonError(null);
+ const handleRunJob = () => {
+  if (!selectedJob) return;
+  setJsonError(null);
 
-    let payload;
-    try {
-      payload = JSON.parse(payloadString);
-    } catch (err) {
-      setJsonError("Invalid JSON format. Please check your syntax.");
-      return;
+  let payload;
+  try {
+    payload = JSON.parse(payloadString);
+  } catch (err) {
+    setJsonError("Invalid JSON format. Please check your syntax.");
+    return;
+  }
+
+  runJob({ jobName: selectedJob, payload }, {
+    onSuccess: (res: any) => {
+      toast.success(`Job ${selectedJob} completed in ${res.durationMs}ms`);
+      setSelectedJob(null);
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error?.message || "Failed to run job.");
     }
-
-    runJob({ jobName: selectedJob, payload }, {
-      onSuccess: (res: any) => {
-        setSelectedJob(null);
-        alert(`Job ${selectedJob} completed in ${res.durationMs}ms.\n\nResult:\n${JSON.stringify(res.result, null, 2)}`);
-      },
-      onError: (err: any) => {
-        alert(err.response?.data?.error?.message || "Failed to run job.");
-      }
-    });
-  };
+  });
+};
 
   return (
     <div className="space-y-8">

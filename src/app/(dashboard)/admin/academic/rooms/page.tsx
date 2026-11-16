@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Loader2, Plus, Trash2, DoorOpen } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function RoomsPage() {
   const { data, isLoading } = useRooms();
@@ -14,7 +15,6 @@ export default function RoomsPage() {
   const { mutate: deleteRoom } = useDeleteRoom();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", code: "", capacity: "30", building: "", floor: "1" });
-
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     createRoom({
@@ -23,7 +23,13 @@ export default function RoomsPage() {
       capacity: parseInt(form.capacity) || undefined,
       building: form.building || undefined,
       floor: parseInt(form.floor) || undefined,
-    }, { onSuccess: () => setIsModalOpen(false) });
+    }, {
+      onSuccess: () => {
+        toast.success("Room created");
+        setIsModalOpen(false);
+      },
+      onError: (err: any) => toast.error(err.response?.data?.error?.message || "Failed to create room")
+    });
   };
 
   return (
@@ -62,14 +68,14 @@ export default function RoomsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <form onSubmit={handleCreate} className="w-full max-w-md bg-[var(--bg-surface)] p-6 rounded-xl space-y-4">
             <h2 className="font-bold text-lg">Create Room</h2>
-            <Input placeholder="Room Name (e.g. Lab 1)" required value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-            <Input placeholder="Code (optional, e.g. R-101)" value={form.code} onChange={e => setForm({...form, code: e.target.value})} />
+            <Input placeholder="Room Name (e.g. Lab 1)" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <Input placeholder="Code (optional, e.g. R-101)" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} />
             <div className="grid grid-cols-2 gap-4">
-              <Input placeholder="Building" value={form.building} onChange={e => setForm({...form, building: e.target.value})} />
-              <Input type="number" placeholder="Floor" value={form.floor} onChange={e => setForm({...form, floor: e.target.value})} />
+              <Input placeholder="Building" value={form.building} onChange={e => setForm({ ...form, building: e.target.value })} />
+              <Input type="number" placeholder="Floor" value={form.floor} onChange={e => setForm({ ...form, floor: e.target.value })} />
             </div>
-            <Input type="number" placeholder="Capacity (e.g. 40)" required value={form.capacity} onChange={e => setForm({...form, capacity: e.target.value})} />
-            
+            <Input type="number" placeholder="Capacity (e.g. 40)" required value={form.capacity} onChange={e => setForm({ ...form, capacity: e.target.value })} />
+
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
               <Button type="submit" loading={isCreating}>Save Room</Button>

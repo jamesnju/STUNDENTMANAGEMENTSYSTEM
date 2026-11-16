@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Loader2, Building2, Search, Plus, Edit2, Trash2, Users, GraduationCap, Eye } from "lucide-react";
 import { DepartmentModal } from "@/components/admin/departments/DepartmentModal";
+import toast from "react-hot-toast";
+import { confirmToast } from "@/components/ui/ConfirmToast";
 
 export default function DepartmentsPage() {
   const router = useRouter();
@@ -36,31 +38,42 @@ export default function DepartmentsPage() {
     router.push(`/admin/departments?${params.toString()}`);
   }, [searchInput, searchParams, router]);
 
-  const handleSave = (payload: any) => {
-    if (editingDept) {
-      updateDept({ id: editingDept.id, payload }, {
-        onSuccess: () => setIsModalOpen(false),
-        onError: (err: any) => alert(err.response?.data?.error?.message || "Failed to update."),
-      });
-    } else {
-      createDept(payload, {
-        onSuccess: () => setIsModalOpen(false),
-        onError: (err: any) => alert(err.response?.data?.error?.message || "Failed to create."),
-      });
-    }
-  };
+const handleSave = (payload: any) => {
+  if (editingDept) {
+    updateDept({ id: editingDept.id, payload }, {
+      onSuccess: () => {
+        toast.success("Department updated");
+        setIsModalOpen(false);
+      },
+      onError: (err: any) => toast.error(err.response?.data?.error?.message || "Failed to update."),
+    });
+  } else {
+    createDept(payload, {
+      onSuccess: () => {
+        toast.success("Department created");
+        setIsModalOpen(false);
+      },
+      onError: (err: any) => toast.error(err.response?.data?.error?.message || "Failed to create."),
+    });
+  }
+};
 
-  const handleDelete = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete the department "${name}"?`)) {
+const handleDelete = (id: string, name: string) => {
+  confirmToast(
+    "Delete department",
+    `Are you sure you want to delete the department "${name}"?`,
+    () => {
       deleteDept(id, {
+        onSuccess: () => toast.success("Department deleted"),
         onError: (err: any) => {
           // Handle the specific 409 error from the API
           const msg = err.response?.data?.error?.message || "Failed to delete department.";
-          alert(msg);
+          toast.error(msg);
         }
       });
     }
-  };
+  );
+};
 
   return (
     <div className="space-y-6">
